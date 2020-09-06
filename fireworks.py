@@ -22,20 +22,28 @@ def set_color():
 class Particle:
     def __init__(self, x, y, exploder, color):
         self.color = color
+        self.want_rect = False
         self.pos = vec(x, y)
         self.set_random_num_for_vel()
         self.velocity = vec(self.random_num_x, self.random_num_y)
         if exploder:
             self.velocity.normalize()
-            self.velocity.scale_to_length(random.random())
+        # to make circle fireworks
+            self.velocity.scale_to_length(random.randrange(-5, 5))
+        # to make custom fireworks
+            # self.velocity.scale_to_length(random.random())
+        # to make rect fireworks
+            # self.velocity = (random.randint(-5, 5), random.randint(-5, 5))
+
+
         else:
             self.velocity = vec(0, random.randint(-20, -10))
-        self.expiration = 5
+        self.expiration = 4
         self.acc = vec(0, 0)
         self.gravity = 0.01
         self.able_to_explode = True
 
-    # sets direction of firework particle
+    # sets direction of firework particle, makes it more random
     def set_random_num_for_vel(self):
         self.random_num_x = random.randint(1, 10)
         if random.random() <= 0.5:
