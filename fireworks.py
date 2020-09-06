@@ -105,7 +105,7 @@ if __name__ == '__main__':
 
         # update fireworks, deleting fireworks from the oldest to the last
         for i, firework in sorted(enumerate(fireworks), reverse=True):
-            print(i, firework, len(fireworks))
+            # print(i, firework, len(fireworks))
             firework.update()
             if fireworks[i].expiration <= 0:
                 fireworks.pop(i)
