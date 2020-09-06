@@ -22,6 +22,7 @@ python main.py
 
 ## Credits
 
-Fireworks app
+Particles app: fireworks 
 
-Project backbone inspired by [KidsCanCode](https://www.youtube.com/c/KidscancodeOrg/videos)
+Project inspired by [The Coding Train] (https://www.youtube.com/channel/UCvjgXvBlbQiydffZU7m1_aw) especially by the series The Coding Chellenge
+and by [DaFluffyPotato] (https://www.youtube.com/channel/UCYNrBrBOgTfHswcz2DdZQFA) especially by the particles series
