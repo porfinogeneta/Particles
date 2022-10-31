@@ -27,10 +27,12 @@ class PG:
     @staticmethod
     def draw_trail(color, positions: []):
         for j, position in enumerate(positions):
-            pg.draw.circle(PG.screen,
-                           Utils.color_fade_to_black_linear(color,j,Parameters.MAX_TRAIL_SUB_PARTICLES),
-                           (position.x, position.y),
-                           Parameters.CIRCLE_SIZE)
+            trail_color = Utils.color_fade_to_black_linear(color, j, Parameters.MAX_TRAIL_SUB_PARTICLES)
+            if Utils.color_is_visible(trail_color):
+                pg.draw.circle(PG.screen,
+                               trail_color,
+                               (position.x, position.y),
+                               Parameters.CIRCLE_SIZE)
 
     @staticmethod
     def generate_particle_explosion(x, y, color, particle_count=100):

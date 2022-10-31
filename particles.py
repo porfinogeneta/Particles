@@ -9,6 +9,7 @@ class Particle(object):
         Cosmetic parameters
         """
         self.color = color
+        self.max_trails = Parameters.MAX_TRAIL_SUB_PARTICLES
         """
         Physics initial parameters
         """
@@ -29,7 +30,7 @@ class Particle(object):
         Previous Positions
         """
         self.previous_positions.append(self.pos.copy())
-        if len(self.previous_positions) >= Parameters.MAX_TRAIL_SUB_PARTICLES:
+        if len(self.previous_positions) >= self.max_trails:
             self.previous_positions.pop(0)
         """
         Calculate Physics
@@ -65,6 +66,7 @@ class ExplodingParticle(Particle):
 
     def __init__(self, x, y, color):
         Particle.__init__(self, x, y, color)
+        self.max_trails = Parameters.MAX_EXPLOSION_SUB_PARTICLES
         self.initial = vec(x, y)
         self.velocity = vec(Utils.random_explode_velocity())
         self.velocity.normalize()
@@ -78,4 +80,7 @@ class ExplodingParticle(Particle):
         """
         Particle Destruction Statement
         """
-        return True if self.expiration > 0 else False
+        if self.expiration > 0 and (Parameters.WIDTH >= self.pos.x > 0) and Parameters.HEIGHT >= self.pos.y > 0:
+            return True
+        else:
+            return False

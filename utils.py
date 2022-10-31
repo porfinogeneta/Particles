@@ -55,6 +55,16 @@ class Utils:
                                                       ))) * color
 
     @staticmethod
+    def color_is_visible(color, threshold=20):
+        """
+        Used to check if a particle with given color would be visible on screen. Optimization method
+        :param color: [r,g,b] Each parameter r, g, b defines the intensity of the color
+        :param threshold: minimal threshold above which the particle is deemed as visible
+        :return: boolean: sum([r,g,b]) > threshold
+        """
+        return True if np.sum(color) > threshold else False
+
+    @staticmethod
     def random_ascend_velocity(min_y=-20, max_y=-10):
         """
         Generate random (0,y) velocity vector for an ascending particle
