@@ -1,10 +1,22 @@
 import numpy as np
 
+from parameters import Parameters
+
 
 class Utils:
     """
     Math utilities for firework generation
     """
+
+    @staticmethod
+    def distance(pos_1, pos_2):
+        """
+        Distance between two points
+        :param pos_1: Point 1 (x1,y1)
+        :param pos_2: Point 2 (x2,y2)
+        :return: float
+        """
+        return np.sqrt(np.power(pos_2.x - pos_1.x, 2) + np.power(pos_2.y - pos_1.y, 2))
 
     @staticmethod
     def random_color(min_i=0, max_i=256):
@@ -16,6 +28,31 @@ class Utils:
         :rtype: list
         """
         return np.random.randint(min_i, max_i, size=3)
+
+    @staticmethod
+    def color_fade_to_black_linear(color, t, T):
+        """
+        Fade to black with ratio t / T
+        :param color: initial color
+        :param t: current time
+        :param T: period
+        :return: [r,g,b] Each parameter r, g, b defines the intensity of the color with ratio t / T to the initial color
+        """
+        return np.full(3, t / T) * color
+
+    @staticmethod
+    def color_fade_to_black_positional(color, initial_pos, current_pos):
+        """
+        :param color:
+        :param initial_pos:
+        :param current_pos:
+        :return:
+        """
+        return np.full(3, 1 - np.power(np.e,
+                                       -1 * np.interp(Utils.distance(initial_pos, current_pos),
+                                                      [0, Parameters.WIDTH],
+                                                      [0, Parameters.WIDTH / 4]
+                                                      ))) * color
 
     @staticmethod
     def random_ascend_velocity(min_y=-20, max_y=-10):
@@ -50,3 +87,14 @@ class Utils:
         :return: [-max_value; max_value]
         """
         return np.interp(np.random.rand(), [0, 1], [-1 * max_value, max_value])
+
+    @staticmethod
+    def approximate_previous_positions(position, velocity, max_time_step):
+        """
+        Approximate previous (x,y) position given current (x,y) position and (vx,xy) vector
+        :param position: current (x,y) position vector
+        :param velocity: current (vx,xy) velocity vector
+        :param max_time_step: number of time steps to fake-traceback
+        :return:
+        """
+        return [position - (velocity * time_step) for time_step in range(max_time_step)]

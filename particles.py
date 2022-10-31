@@ -2,6 +2,7 @@ from utils import Utils
 from parameters import Parameters
 from pygame.math import Vector2 as vec
 
+
 class Particle(object):
     def __init__(self, x, y, color):
         """
@@ -17,12 +18,19 @@ class Particle(object):
         """
         Time-domain parameters
         """
-        self.expiration = 4
+        self.expiration = Parameters.EXPIRATION_TIME
+        self.previous_positions = []
 
     def apply_force(self, force):
         self.acc.y += force
 
     def update(self):
+        """
+        Previous Positions
+        """
+        self.previous_positions.append(self.pos.copy())
+        if len(self.previous_positions) >= Parameters.MAX_TRAIL_SUB_PARTICLES:
+            self.previous_positions.pop(0)
         """
         Calculate Physics
         """
@@ -32,13 +40,16 @@ class Particle(object):
         """
         Time-domain evaluation
         """
-        self.expiration -= 0.05
+        self.expiration -= Parameters.EXPIRATION_TIMEDELTA
 
 
 class FlyingParticle(Particle):
     """
     A flying particle object
     """
+
+    def update_particle(self):
+        self.update()
 
     def explode(self):
         """
@@ -54,9 +65,14 @@ class ExplodingParticle(Particle):
 
     def __init__(self, x, y, color):
         Particle.__init__(self, x, y, color)
+        self.initial = vec(x, y)
         self.velocity = vec(Utils.random_explode_velocity())
         self.velocity.normalize()
         self.velocity.scale_to_length(Utils.integer_range(Parameters.EXPLODE_RADIUS))
+
+    def update_particle(self):
+        self.update()
+        self.color = Utils.color_fade_to_black_positional(self.color, self.initial, self.pos)
 
     def alive(self):
         """
