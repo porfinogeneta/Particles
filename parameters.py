@@ -1,0 +1,9 @@
+class Parameters:
+    WIDTH = 600
+    HEIGHT = 800
+
+    CIRCLE_SIZE = 5
+    EXPLODE_RADIUS = 5
+
+    GRAVITY = 0.01
+    FIREWORK_GENERATION_CHANCE = 0.05

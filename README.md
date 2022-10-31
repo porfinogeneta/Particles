@@ -6,7 +6,7 @@ First folder - fireworks contain progoram which makes fireworks with different c
 ## Prerequisites
 
 ```bash
-pip install pygame
+pip install -r requirements.txt
 ```
 ## How to start
 
