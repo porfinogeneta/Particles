@@ -1,117 +1,86 @@
+import sys
+
+import numpy as np
+
+from utils import Utils
+from particles import FlyingParticle, ExplodingParticle
+from parameters import Parameters
+
 import pygame as pg
-import sys, random
-
-mainClock = pg.time.Clock()
-
-WIDTH = 600
-HEIGHT = 800
-
-vec = pg.math.Vector2
-
-pg.init()
 from pygame.locals import *
 
-screen = pg.display.set_mode((WIDTH, HEIGHT))
+
+class State:
+    particles = []
+    fireworks = []
 
 
-def set_color():
-    color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-    return color
+class PG:
+    mainClock = pg.time.Clock()
+    screen = pg.display.set_mode((Parameters.WIDTH, Parameters.HEIGHT))
+    pg.init()
 
+    @staticmethod
+    def draw_circle(color, x: int, y: int):
+        pg.draw.circle(PG.screen, color, (x, y), Parameters.CIRCLE_SIZE)
 
-class Particle:
-    def __init__(self, x, y, exploder, color):
-        self.color = color
-        self.want_rect = False
-        self.pos = vec(x, y)
-        self.set_random_num_for_vel()
-        self.velocity = vec(self.random_num_x, self.random_num_y)
-        if exploder:
-            self.velocity.normalize()
-        # to make circle fireworks
-            self.velocity.scale_to_length(random.randrange(-5, 5))
-        # to make custom fireworks
-            # self.velocity.scale_to_length(random.random())
-        # to make rect fireworks
-            # self.velocity = (random.randint(-5, 5), random.randint(-5, 5))
+    @staticmethod
+    def draw_trail(color, positions: []):
+        for j, position in enumerate(positions):
+            trail_color = Utils.color_fade_to_black_linear(color, j, Parameters.MAX_TRAIL_SUB_PARTICLES)
+            if Utils.color_is_visible(trail_color):
+                pg.draw.circle(PG.screen,
+                               trail_color,
+                               (position.x, position.y),
+                               Parameters.CIRCLE_SIZE)
 
+    @staticmethod
+    def generate_particle_explosion(x, y, color, particle_count=100):
+        for j in range(particle_count):
+            State.fireworks.append(ExplodingParticle(x, y, color))
 
-        else:
-            self.velocity = vec(0, random.randint(-20, -10))
-        self.expiration = 4
-        self.acc = vec(0, 0)
-        self.gravity = 0.01
-        self.able_to_explode = True
-
-    # sets direction of firework particle, makes it more random
-    def set_random_num_for_vel(self):
-        self.random_num_x = random.randint(1, 10)
-        if random.random() <= 0.5:
-            self.random_num_x *= -1
-        self.random_num_y = random.randint(1, 10)
-        if random.random() <= 0.5:
-            self.random_num_y *= -1
-
-
-    def draw(self):
-        pg.draw.circle(screen, self.color, (int(self.pos.x), int(self.pos.y)), 5)
-
-    def apply_force(self, force):
-        self.acc.y += force
-
-    def explode(self):
-        for i in range(0, 100):
-            self.p = Particle(explode_pos.x, explode_pos.y, True, firework_color)
-            fireworks.append(self.p)
-
-
-
-    def update(self):
-        self.draw()
-        self.apply_force(self.gravity)
-        self.velocity += self.acc
-
-        self.pos += self.velocity
-        self.expiration -= 0.05
-
-
-particles = []
-fireworks = []
 
 if __name__ == '__main__':
-    # game loop
+
     while True:
+        """
+        New frame display canvas clearance and fps count recalculation
+        """
+        pg.display.set_caption(f'Fireworks :: fps = {int(PG.mainClock.get_fps())}')
+        PG.screen.fill(np.zeros(3))
 
-        # activities
-        pg.display.set_caption('{:f}'.format(mainClock.get_fps()))
-        screen.fill((0, 0, 0))
+        """
+        Fixed chance to generate a new firework each frame
+        """
+        if np.random.rand() < Parameters.FIREWORK_GENERATION_CHANCE:
+            State.particles.append(FlyingParticle(np.random.randint(0, Parameters.WIDTH),
+                                                  np.random.randint(600, Parameters.HEIGHT),
+                                                  Utils.random_color()))
 
+        """
+        Update each particle
+        """
+        for particle in State.particles:
+            particle.update_particle()
+            PG.draw_trail(particle.color, particle.previous_positions)
+            PG.draw_circle(particle.color, int(particle.pos.x), int(particle.pos.y))
+            if particle.explode() is True:
+                PG.generate_particle_explosion(particle.pos.x, particle.pos.y, particle.color)
+                State.particles.remove(particle)
 
-        # 5% probability to make firework every frame
-        if random.random() < 0.05:
-            particles.append(Particle(random.randint(0, WIDTH), random.randint(600, HEIGHT), False, set_color()))
+        """
+        Update each firework, from the latest to the oldest one
+        """
+        for i, firework in sorted(enumerate(State.fireworks), reverse=True):
+            firework.update_particle()
+            PG.draw_trail(firework.color, firework.previous_positions)
+            PG.draw_circle(firework.color, int(firework.pos.x), int(firework.pos.y))
+            if firework.alive() is False:
+                State.fireworks.remove(firework)
 
-        # update particles
-        for particle in particles:
-            particle.update()
-
-            # give setting for new firework and deleting exploded particle
-            if particle.velocity.y >= 0:
-                explode_pos = particle.pos
-                firework_color = particle.color
-                particle.explode()
-                particles.remove(particle)
-
-
-        # update fireworks, deleting fireworks from the oldest to the last
-        for i, firework in sorted(enumerate(fireworks), reverse=True):
-            # print(i, firework, len(fireworks))
-            firework.update()
-            if fireworks[i].expiration <= 0:
-                fireworks.pop(i)
-
-
-        # buttons
+        """
+        PyGame Keyboard Event Handlers
+        """
         for event in pg.event.get():
             if event.type == QUIT:
                 pg.quit()
@@ -121,6 +90,8 @@ if __name__ == '__main__':
                     pg.quit()
                     sys.exit()
 
-        # update
+        """
+        Update
+        """
         pg.display.update()
-        mainClock.tick(60)
+        PG.mainClock.tick(60)
